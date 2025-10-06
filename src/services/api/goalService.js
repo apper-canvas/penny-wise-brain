@@ -1,86 +1,298 @@
-import goalsData from "@/services/mockData/goals.json";
-
-let goals = [...goalsData];
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import { toast } from "react-toastify";
 
 export const goalService = {
   getAll: async () => {
-    await delay(300);
-    return [...goals].sort((a, b) => 
-      new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-    );
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "target_amount_c"}},
+          {"field": {"Name": "current_amount_c"}},
+          {"field": {"Name": "deadline_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "status_c"}}
+        ],
+        orderBy: [{"fieldName": "deadline_c", "sorttype": "ASC"}]
+      };
+
+      const response = await apperClient.fetchRecords('goal_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching goals:", error);
+      return [];
+    }
   },
 
   getById: async (id) => {
-    await delay(200);
-    const goal = goals.find(g => g.Id === parseInt(id));
-    if (!goal) throw new Error("Goal not found");
-    return { ...goal };
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "target_amount_c"}},
+          {"field": {"Name": "current_amount_c"}},
+          {"field": {"Name": "deadline_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "status_c"}}
+        ]
+      };
+
+      const response = await apperClient.getRecordById('goal_c', id, params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        throw new Error("Goal not found");
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching goal ${id}:`, error);
+      throw error;
+    }
   },
 
   getActive: async () => {
-    await delay(300);
-    return goals
-      .filter(g => g.status === "active")
-      .map(g => ({ ...g }))
-      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        fields: [
+          {"field": {"Name": "Id"}},
+          {"field": {"Name": "name_c"}},
+          {"field": {"Name": "target_amount_c"}},
+          {"field": {"Name": "current_amount_c"}},
+          {"field": {"Name": "deadline_c"}},
+          {"field": {"Name": "created_at_c"}},
+          {"field": {"Name": "status_c"}}
+        ],
+        where: [
+          {"FieldName": "status_c", "Operator": "EqualTo", "Values": ["active"]}
+        ],
+        orderBy: [{"fieldName": "deadline_c", "sorttype": "ASC"}]
+      };
+
+      const response = await apperClient.fetchRecords('goal_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return [];
+      }
+
+      return response.data || [];
+    } catch (error) {
+      console.error("Error fetching active goals:", error);
+      return [];
+    }
   },
 
   create: async (goalData) => {
-    await delay(300);
-    const maxId = Math.max(...goals.map(g => g.Id), 0);
-    const newGoal = {
-      Id: maxId + 1,
-      ...goalData,
-      currentAmount: goalData.currentAmount || 0,
-      createdAt: new Date().toISOString(),
-      status: "active",
-    };
-    goals.push(newGoal);
-    return { ...newGoal };
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        records: [{
+          name_c: goalData.name,
+          target_amount_c: parseFloat(goalData.targetAmount),
+          current_amount_c: parseFloat(goalData.currentAmount || 0),
+          deadline_c: goalData.deadline,
+          created_at_c: new Date().toISOString(),
+          status_c: "active"
+        }]
+      };
+
+      const response = await apperClient.createRecord('goal_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        throw new Error("Failed to create goal");
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to create ${failed.length} goals:`, failed);
+          failed.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+          throw new Error("Failed to create goal");
+        }
+
+        return successful[0]?.data;
+      }
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      throw error;
+    }
   },
 
   update: async (id, goalData) => {
-    await delay(300);
-    const index = goals.findIndex(g => g.Id === parseInt(id));
-    if (index === -1) throw new Error("Goal not found");
-    
-    const updatedGoal = {
-      ...goals[index],
-      ...goalData,
-      Id: goals[index].Id,
-      createdAt: goals[index].createdAt,
-    };
-    
-    if (updatedGoal.currentAmount >= updatedGoal.targetAmount) {
-      updatedGoal.status = "completed";
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const currentAmount = parseFloat(goalData.currentAmount);
+      const targetAmount = parseFloat(goalData.targetAmount);
+      const status = currentAmount >= targetAmount ? "completed" : "active";
+
+      const params = {
+        records: [{
+          Id: id,
+          name_c: goalData.name,
+          target_amount_c: targetAmount,
+          current_amount_c: currentAmount,
+          deadline_c: goalData.deadline,
+          status_c: status
+        }]
+      };
+
+      const response = await apperClient.updateRecord('goal_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        throw new Error("Failed to update goal");
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to update ${failed.length} goals:`, failed);
+          failed.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+          throw new Error("Failed to update goal");
+        }
+
+        return successful[0]?.data;
+      }
+    } catch (error) {
+      console.error("Error updating goal:", error);
+      throw error;
     }
-    
-    goals[index] = updatedGoal;
-    return { ...updatedGoal };
   },
 
   addContribution: async (id, amount) => {
-    await delay(300);
-    const index = goals.findIndex(g => g.Id === parseInt(id));
-    if (index === -1) throw new Error("Goal not found");
-    
-    goals[index].currentAmount += amount;
-    
-    if (goals[index].currentAmount >= goals[index].targetAmount) {
-      goals[index].status = "completed";
+    try {
+      const goal = await goalService.getById(id);
+      const newCurrentAmount = goal.current_amount_c + amount;
+      const status = newCurrentAmount >= goal.target_amount_c ? "completed" : "active";
+
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        records: [{
+          Id: id,
+          current_amount_c: newCurrentAmount,
+          status_c: status
+        }]
+      };
+
+      const response = await apperClient.updateRecord('goal_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        throw new Error("Failed to add contribution");
+      }
+
+      if (response.results) {
+        const successful = response.results.filter(r => r.success);
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to add contribution to ${failed.length} goals:`, failed);
+          failed.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+          throw new Error("Failed to add contribution");
+        }
+
+        return successful[0]?.data;
+      }
+    } catch (error) {
+      console.error("Error adding contribution:", error);
+      throw error;
     }
-    
-    return { ...goals[index] };
   },
 
   delete: async (id) => {
-    await delay(300);
-    const index = goals.findIndex(g => g.Id === parseInt(id));
-    if (index === -1) throw new Error("Goal not found");
-    
-    goals.splice(index, 1);
-    return true;
+    try {
+      const { ApperClient } = window.ApperSDK;
+      const apperClient = new ApperClient({
+        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+      });
+
+      const params = {
+        RecordIds: [id]
+      };
+
+      const response = await apperClient.deleteRecord('goal_c', params);
+
+      if (!response.success) {
+        console.error(response.message);
+        toast.error(response.message);
+        return false;
+      }
+
+      if (response.results) {
+        const failed = response.results.filter(r => !r.success);
+
+        if (failed.length > 0) {
+          console.error(`Failed to delete ${failed.length} goals:`, failed);
+          failed.forEach(record => {
+            if (record.message) toast.error(record.message);
+          });
+          return false;
+        }
+
+        return true;
+      }
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      return false;
+    }
   },
 };

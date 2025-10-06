@@ -1,8 +1,12 @@
+import { useContext } from "react";
 import { NavLink } from "react-router-dom";
 import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
 import { cn } from "@/utils/cn";
+import { AuthContext } from "@/App";
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const { logout } = useContext(AuthContext);
   const navItems = [
     { path: "/", icon: "LayoutDashboard", label: "Dashboard" },
     { path: "/transactions", icon: "Receipt", label: "Transactions" },
@@ -46,32 +50,49 @@ const Sidebar = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <nav className="p-4 space-y-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onClose}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                  isActive
-                    ? "bg-primary-50 text-primary-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )
-              }
+<nav className="p-4 space-y-2 flex-1 flex flex-col">
+          <div className="space-y-2 flex-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-primary-50 text-primary-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <ApperIcon name={item.icon} size={20} />
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-500" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+          <div className="pt-4 border-t border-gray-200">
+            <Button
+              variant="ghost"
+              size="sm"
+              fullWidth
+              onClick={() => {
+                logout();
+                onClose();
+              }}
+              className="justify-start"
             >
-              {({ isActive }) => (
-                <>
-                  <ApperIcon name={item.icon} size={20} />
-                  <span>{item.label}</span>
-                  {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-500" />
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+              <ApperIcon name="LogOut" size={20} />
+              <span>Logout</span>
+            </Button>
+          </div>
         </nav>
       </aside>
 
@@ -89,31 +110,45 @@ const Sidebar = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <nav className="p-4 space-y-2">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                  isActive
-                    ? "bg-primary-50 text-primary-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )
-              }
+<nav className="p-4 space-y-2 flex-1 flex flex-col">
+          <div className="space-y-2 flex-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-primary-50 text-primary-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <ApperIcon name={item.icon} size={20} />
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-500" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+          <div className="pt-4 border-t border-gray-200">
+            <Button
+              variant="ghost"
+              size="sm"
+              fullWidth
+              onClick={logout}
+              className="justify-start"
             >
-              {({ isActive }) => (
-                <>
-                  <ApperIcon name={item.icon} size={20} />
-                  <span>{item.label}</span>
-                  {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-500" />
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+              <ApperIcon name="LogOut" size={20} />
+              <span>Logout</span>
+            </Button>
+          </div>
         </nav>
       </aside>
     </>
