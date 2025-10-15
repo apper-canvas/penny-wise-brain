@@ -146,7 +146,7 @@ const GoalsList = ({ onAddClick }) => {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Target</span>
                   <span className="font-semibold text-gray-900">
-                    ${goal.targetAmount.toFixed(2)}
+${(goal.targetAmount ?? 0).toFixed(2)}
                   </span>
                 </div>
 
