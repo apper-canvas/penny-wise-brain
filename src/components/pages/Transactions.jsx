@@ -78,16 +78,16 @@ const Transactions = () => {
     loadData();
   };
 
-  const getCategoryIcon = (categoryName) => {
-    const category = categories.find(c => c.name === categoryName);
-    return category?.icon || "Circle";
+const getCategoryIcon = (categoryName) => {
+    const category = categories.find(c => c.name_c === categoryName);
+    return category?.icon_c || "Circle";
   };
 
-  const filteredTransactions = transactions.filter(tx => {
-    const matchesSearch = tx.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (tx.notes && tx.notes.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesType = filterType === "all" || tx.type === filterType;
-    const matchesCategory = filterCategory === "all" || tx.category === filterCategory;
+const filteredTransactions = transactions.filter(tx => {
+    const matchesSearch = tx.category?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (tx.notes_c && tx.notes_c.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesType = filterType === "all" || tx.type_c === filterType;
+    const matchesCategory = filterCategory === "all" || tx.category?.Name === filterCategory;
     
     return matchesSearch && matchesType && matchesCategory;
   });
@@ -132,8 +132,8 @@ const Transactions = () => {
           <div>
             <Select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
               <option value="all">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.Id} value={cat.name}>
+{categories.map((cat) => (
+                <option key={cat.Id} value={cat.name_c}>
                   {cat.name}
                 </option>
               ))}
