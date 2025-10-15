@@ -1,6 +1,9 @@
 import { format, startOfMonth, endOfMonth, subMonths, parseISO } from "date-fns";
 
 export const formatDate = (date, formatStr = "MMM dd, yyyy") => {
+  if (!date || date === "" || date === null || date === undefined) {
+    return format(new Date(), formatStr);
+  }
   const dateObj = typeof date === "string" ? parseISO(date) : date;
   return format(dateObj, formatStr);
 };
@@ -10,11 +13,17 @@ export const getCurrentMonthKey = () => {
 };
 
 export const getMonthKey = (date) => {
+  if (!date || date === "" || date === null || date === undefined) {
+    return format(new Date(), "yyyy-MM");
+  }
   const dateObj = typeof date === "string" ? parseISO(date) : date;
   return format(dateObj, "yyyy-MM");
 };
 
 export const getMonthName = (monthKey) => {
+  if (!monthKey || typeof monthKey !== "string" || !monthKey.includes("-")) {
+    return format(new Date(), "MMMM yyyy");
+  }
   const [year, month] = monthKey.split("-");
   return format(new Date(year, month - 1, 1), "MMMM yyyy");
 };
