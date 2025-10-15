@@ -30,8 +30,8 @@ const TransactionForm = ({ onSuccess, onCancel, transaction = null }) => {
       const data = await categoryService.getByType(formData.type);
       setCategories(data);
       
-      if (!formData.category && data.length > 0) {
-        setFormData(prev => ({ ...prev, category: data[0].name }));
+if (!formData.category && data.length > 0) {
+        setFormData(prev => ({ ...prev, category: data[0].Name }));
       }
     } catch (error) {
       toast.error("Failed to load categories");
@@ -150,9 +150,9 @@ const TransactionForm = ({ onSuccess, onCancel, transaction = null }) => {
           error={errors.category}
         >
           <option value="">Select category</option>
-          {categories.map((cat) => (
-            <option key={cat.Id} value={cat.name}>
-              {cat.name}
+{categories.map((cat) => (
+            <option key={cat.Id} value={cat.Name}>
+              {cat.Name}
             </option>
           ))}
         </Select>
