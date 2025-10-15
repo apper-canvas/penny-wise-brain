@@ -151,7 +151,11 @@ if (!formData.category && data.length > 0) {
         >
           <option value="">Select category</option>
 {categories.map((cat) => (
-            <option key={cat.Id} value={cat.Name}>
+            <option 
+              key={cat.Id} 
+              value={cat.Name}
+              style={{ color: '#000000', backgroundColor: '#ffffff', padding: '8px 12px' }}
+            >
               {cat.Name}
             </option>
           ))}
